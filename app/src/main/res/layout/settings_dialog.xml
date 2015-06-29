@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="300dp"
+    android:background="@drawable/settings_background"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <TextView android:id="@+id/headerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:textColor="#0099cc"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/settings_title" />
+
+    <View android:id="@+id/dialogHeader"
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:layout_below="@+id/headerText"
+        android:background="?android:attr/dividerHorizontal" />
+
+    <TextView android:id="@+id/cbtText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:layout_marginStart="10dp"
+        android:layout_below="@+id/dialogHeader"
+        android:text="@string/settings_cbt_name" />
+
+    <EditText android:id="@+id/cbtEditText"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/cbtText"
+        android:layout_below="@+id/dialogHeader"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/cbt_name"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="5dp"
+        android:text="@string/settings_reconnect_on_charge"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/chargeCheckBox"
+        android:layout_below="@+id/cbtEditText"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_bluetooth_connect"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/btCheckBox"
+        android:layout_below="@+id/chargeCheckBox"
+        android:layout_alignStart="@+id/chargeCheckBox" />
+
+    <ExpandableListView
+        android:id="@+id/btListView"
+        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="-10dp"
+        android:layout_alignStart="@+id/chargeCheckBox"
+        android:layout_below="@+id/btCheckBox" />
+
+    <View android:layout_above="@+id/buttonHolder"
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:background="?android:attr/dividerHorizontal" />
+
+    <LinearLayout
+        android:id="@+id/buttonHolder"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cancelButton"
+            style="@android:style/Widget.Holo.Button.Borderless.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/settings_cancel" />
+
+        <View
+            android:layout_width="1dip"
+            android:layout_height="match_parent"
+            android:background="?android:attr/dividerVertical" />
+
+        <Button
+            android:id="@+id/saveButton"
+            style="@android:style/Widget.Holo.Button.Borderless.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/settings_save" />
+    </LinearLayout>
+
+</RelativeLayout>

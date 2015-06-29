@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <style type='text/css'>
+      a            { color:#a0a0e0 }
+      div.title    { 
+          color:#C0F0C0; 
+          font-size:1.2em; 
+          font-weight:bold; 
+          margin-top:1em; 
+          margin-bottom:0.5em; 
+          text-align:center }
+      div.subtitle { 
+          color:#C0F0C0; 
+          font-size:0.8em; 
+          margin-bottom:1em; 
+          text-align:center }
+      div.freetext { color:#F0F0F0 }
+      div.list     { color:#C0C0F0 }
+    </style>
+  </head>
+  <body>
+  
+$ 0.0.2
+  % <b>Genesis Connect is governed by the terms of the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>. You must agree to these terms if you choose to use Genesis Connect in any manner whatsoever.</b><br><br>Version 0.0.2
+  _ 2015-06-28
+  ! 2nd Alpha Release (Expect Bugs)
+	* AM / FM1 / FM2
+	* AM & FM Tuning
+	* Audio Controls (Bass / Mid Range / Treble / Fader / Balance)
+	* Settings Dialog
+	* Selectable auto-reconnnect only when charging
+	* Selectable auto-reconnect only when specific BT device is connected
+	* Numerous bug fixes
+$ 0.0.1
+  % Version 0.0.1
+  _ 2015-06-22
+  ! Alpha Release (Expect Major Bugs)
+	* Radio Power On/Off
+	* Audio Source (Radio / XM / CD / USB / BT)
+	* Mute button
+	* Volume
+	* AC Thermostat
+	* AC Compressor Status
+	* AC Airflow (Fresh Air / Recirculate) 
+	* AC Vents (Front Defrost only for now)
+	* AC Auto/Manual mode
+	* DISP Button shows Outside Temperature
+	* Bluetooth (the car's connection) status
+  % Need more help?
+    * <a href="http://www.shellware.com/BlogEngine.Web/page/genesis-connect">Genesis Connect Homepage</a> 
+    * You can contact me directly at the above URL and you can send me an email at <a href="mailto:shell@shellware.com">shell@shellware.com</a>
+$ END_OF_CHANGE_LOG
+  </body>
+</html>

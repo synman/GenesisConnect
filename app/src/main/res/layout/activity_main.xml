@@ -1,0 +1,155 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center" >
+    
+    <LinearLayout android:id="@+id/registerLayout"
+        android:visibility="gone"
+    	android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/register_background" >
+
+        <ImageView android:id="@+id/registerImage"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/volume" />
+
+        <TextView
+            android:id="@+id/registerText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="10dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" 
+            android:textColor="#FFFFFFFF" />
+    </LinearLayout>
+    
+    <RelativeLayout android:id="@+id/audioControlsLayout"
+        android:visibility="gone"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/sound_background">
+
+     	<ImageView android:id="@+id/headerImageLeft"
+	       	android:layout_width="20dp"
+	        android:layout_height="20dp"
+	        android:layout_alignParentStart="true"
+	        android:src="@drawable/musicnote"
+	        android:layout_marginStart="20dp"/>
+        
+     	<TextView android:id="@+id/headerText"
+	       	android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerHorizontal="true"
+	        android:layout_marginTop="1dp"
+	        android:layout_marginBottom="15dp"
+	        android:text="@string/audio_controls"
+	        android:textColor="#FFFFFFFF" />
+     	
+     	<ImageView android:id="@+id/headerImageRight"
+	       	android:layout_width="20dp"
+	        android:layout_height="20dp"
+	        android:layout_alignParentEnd="true"
+	        android:src="@drawable/musicnote"
+	        android:layout_marginEnd="20dp"/>
+        
+     	<TextView android:id="@+id/bassText"
+	       	android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/headerText"
+	        android:layout_marginTop="12dp"
+	        android:text="@string/bass"
+	        android:textColor="#FFFFFFFF" />
+
+       	<com.shellware.genesisconnect.NoTouchSeekBar
+       	    android:id="@+id/bassSeek"
+			android:max="20" 
+			style="@android:style/Widget.Holo.SeekBar"
+       	    android:layout_width="fill_parent"
+       	    android:layout_height="wrap_content"
+	        android:layout_marginTop="5dp"
+       	    android:layout_marginStart="5dp"
+	        android:layout_below="@+id/headerText"
+       	    android:layout_toEndOf="@+id/midText" />
+        
+       	<TextView android:id="@+id/midText"
+	       	android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="17dp"
+	        android:layout_below="@+id/bassText"
+	        android:text="@string/midrange"
+	        android:textColor="#FFFFFFFF" />
+
+       	<com.shellware.genesisconnect.NoTouchSeekBar
+       	    android:id="@+id/midSeek"
+			android:max="20" 
+			style="@android:style/Widget.Holo.SeekBar"
+       	    android:layout_width="fill_parent"
+       	    android:layout_height="wrap_content"
+	        android:layout_marginTop="10dp"
+       	    android:layout_marginStart="5dp"
+	        android:layout_below="@+id/bassText"
+       	    android:layout_toEndOf="@+id/midText" />
+        
+       	<TextView android:id="@+id/trebleText"
+	       	android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="17dp"
+	        android:layout_below="@+id/midText"
+	        android:text="@string/treble"
+	        android:textColor="#FFFFFFFF" />
+
+       	<com.shellware.genesisconnect.NoTouchSeekBar
+       	    android:id="@+id/trebleSeek"
+			android:max="20" 
+			style="@android:style/Widget.Holo.SeekBar"
+       	    android:layout_width="fill_parent"
+       	    android:layout_height="wrap_content"
+	        android:layout_marginTop="10dp"
+       	    android:layout_marginStart="5dp"
+	        android:layout_below="@+id/midText"
+       	    android:layout_toEndOf="@+id/midText" />
+        
+       	<TextView android:id="@+id/fadeText"
+	       	android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="37dp"
+	        android:layout_below="@+id/trebleText"
+	        android:text="@string/fader"
+	        android:textColor="#FFFFFFFF" />
+
+       	<com.shellware.genesisconnect.NoTouchSeekBar
+       	    android:id="@+id/fadeSeek"
+			android:max="20" 
+			style="@android:style/Widget.Holo.SeekBar"
+       	    android:layout_width="fill_parent"
+       	    android:layout_height="wrap_content"
+	        android:layout_marginTop="30dp"
+       	    android:layout_marginStart="5dp"
+	        android:layout_below="@+id/trebleText"
+       	    android:layout_toEndOf="@+id/midText" />
+       	
+       	<TextView android:id="@+id/balanceText"
+	       	android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="17dp"
+	        android:layout_below="@+id/fadeText"
+	        android:text="@string/balance"
+	        android:textColor="#FFFFFFFF" />
+
+       	<com.shellware.genesisconnect.NoTouchSeekBar
+       	    android:id="@+id/balanceSeek"
+			android:max="20" 
+			style="@android:style/Widget.Holo.SeekBar"
+       	    android:layout_width="fill_parent"
+       	    android:layout_height="wrap_content"
+	        android:layout_marginTop="10dp"
+       	    android:layout_marginStart="5dp"
+	        android:layout_below="@+id/fadeText"
+       	    android:layout_toEndOf="@+id/midText" />
+        	
+	</RelativeLayout>
+
+</RelativeLayout>
