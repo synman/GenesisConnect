@@ -1,17 +1,16 @@
 package com.shellware.genesisconnect;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import android.content.Context;
-import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
@@ -59,6 +58,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         txtListChild.setText(childText);
         txtListChild.setChecked(checksList.contains(childText));
 
+        //TODO: refactor managing checkbox within ExpandableListAdapter
         if (!checks.contains(txtListChild)) checks.add(txtListChild);
 
         return convertView;

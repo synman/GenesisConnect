@@ -157,7 +157,10 @@ public class BusData {
 		SOUND_MIDRANGE,
 		SOUND_TREBLE,
 		SOUND_BALANCE,
-		SOUND_FADER
+		SOUND_FADER,
+        RADIO_PRESET,
+        FM_STEREO,
+        XM_BAND
 	}
 	
 	private boolean displayButtonPressed;
@@ -180,6 +183,10 @@ public class BusData {
 	private int treble;
 	private int balance;
 	private int fader;
+
+    private int radioPreset;
+    private boolean fmStereo;
+    private int xmBand;
 	
 	private final Context context;
 	private final Collection<BusDataListener> busDataListeners = new ArrayList<BusDataListener>();
@@ -500,7 +507,72 @@ public class BusData {
 		}
 	}
 
-	public boolean addBusDataListener(BusDataListener busDataListener) {
+    public synchronized String getRadioPreset() {
+        switch (radioPreset) {
+            case 10:
+                return "Preset #1";
+            case 20:
+                return "Preset #2";
+            case 30:
+                return "Preset #3";
+            case 40:
+                return "Preset #4";
+            case 50:
+                return "Preset #5";
+            case 60:
+                return "Preset #6";
+            default:
+                return "Unknown Preset";
+        }
+    }
+
+    public synchronized void setRadioPreset(int preset) {
+        if (this.radioPreset != preset) {
+            this.radioPreset = preset;
+
+            for (BusDataListener busDataListener : busDataListeners) {
+                busDataListener.onBusDataChanged(BusDataFields.RADIO_PRESET, getRadioPreset());
+            }
+        }
+    }
+
+    public synchronized boolean isFmStereo() { return fmStereo; }
+
+    public synchronized void setFmStereo(boolean fmStereo) {
+//        if (this.fmStereo != fmStereo) {
+            this.fmStereo = fmStereo;
+
+            for (BusDataListener busDataListener : busDataListeners) {
+                busDataListener.onBusDataChanged(BusDataFields.FM_STEREO, isFmStereo());
+            }
+//        }
+    }
+
+    public synchronized String getXmBand() {
+        switch (xmBand) {
+            case 1:
+                return "XM1";
+            case 2:
+                return "XM2";
+            case 3:
+                return "XM3";
+            default:
+                return "Unknown XM Band";
+        }
+    }
+
+    public synchronized void setXmBand(int xmBand) {
+        if (this.xmBand != xmBand) {
+            this.xmBand = xmBand;
+
+            for (BusDataListener busDataListener : busDataListeners) {
+                busDataListener.onBusDataChanged(BusDataFields.XM_BAND, getXmBand());
+            }
+        }
+
+    }
+
+    public boolean addBusDataListener(BusDataListener busDataListener) {
 		boolean status = !busDataListeners.contains(busDataListener) && busDataListeners.add(busDataListener);
 		Log.d(CLASS_NAME, "addBusDataListener " + status);
 		return status;

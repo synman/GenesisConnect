@@ -15,6 +15,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -46,9 +47,9 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 	private final static String APP_NAME = "GenesisConnect";
 //	private static final int LONG_PAUSE = 250;
 
-	private Context context;
-	private SharedPreferences prefs;
-//	private MainActivity me = this;
+	private static Context context;
+	private static SharedPreferences prefs;
+	private static PowerManager.WakeLock wakeLock;
 	
 	private CanBusTripleService canBusTripleService;
 	private ServiceConnection canBusTripleServiceConnection;
@@ -137,8 +138,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 		super.onResume();
 		
         if (shuttingDown) return;
-        Log.d(APP_NAME, "onResume");
-        
+
     	paused = false;
 
     	if (startingUp) {
@@ -152,6 +152,8 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
             	moveTaskToBack(true);
             }
         }
+
+		Log.d(APP_NAME, "onResume");
 	}
 	
 	@Override
@@ -159,24 +161,26 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 		super.onPause();
 
 		paused = true;
-		registerFadeHandler.removeCallbacks(RegisterFadeRunnable);
-		audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-		
-		Log.d(APP_NAME,"onPause");		
+		Log.d(APP_NAME, "onPause");
 	}
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		Log.d(APP_NAME, "onDestroy");
 
-		canBusTripleService.getBusData().removeBusDataListener((MainActivity) context);	
+        registerFadeHandler.removeCallbacks(RegisterFadeRunnable);
+        audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
+
+        canBusTripleService.getBusData().removeBusDataListener((MainActivity) context);
     	unbindService(canBusTripleServiceConnection);
+
+        Log.d(APP_NAME, "onDestroy");
 	}
 	
 	@Override
 	public void onBackPressed() {
 		moveTaskToBack(true);
+        Log.d(APP_NAME, "onBackPressed");
 	}
 	
 	@Override
@@ -221,7 +225,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
                 devices.add(device.getName());
             }
         } catch (Exception ex) {
-            // do nothing
+            devices.add("No Bluetooth Adapter");
         }
 
         listDataChild.put(listDataHeader.get(0), devices);
@@ -282,6 +286,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
         settingsDialog.show();
     }
 
+
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {	
 	    switch (event.getAction()) {
@@ -302,148 +307,152 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 	public void onBusDataChanged(BusDataFields field, Object value) {
 
 		int drawable = 0;
+
 		String text = "";
-		
-		switch (field) {
-			case AIRFLOW:
-				if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
-				
-				final Airflow airflow = (Airflow) value;
-				
-				switch (airflow) {
-					case AUTO_FRESH_AIR:
-						drawable = R.drawable.freshair;
-						break;
-					case AUTO_RECIRCULATE:
-						drawable = R.drawable.recirculate;
-						break;
-					case FRESH_AIR:
-						drawable = R.drawable.freshair;
-						break;
-					case RECIRCULATE:
-						drawable = R.drawable.recirculate;
-						break;
-					default:
-						break;
-				}
-				
-				setAndShowRegister(drawable, airflow.toString());
-				break;
+        final String band = canBusTripleService.getBusData().getRadioBand();
+        String station = "";
 
-			case AUDIO_SOURCE:
-				final AudioSource source = (AudioSource) value;
-				
-				if (source != BusData.AudioSource.AUDIO_SETUP && audioControlsLayout.getVisibility() == View.VISIBLE) {
-					audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-					audioControlsFadeHandler.post(audioControlsFadeRunnable);
-					return;
-				} 
+        switch (field) {
+            case AIRFLOW:
+                if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
 
-				switch (source) {
-					case BLUETOOTH:
-						drawable = R.drawable.bluetooth;
-						break;
-					case RADIO:
-						drawable = R.drawable.radio;
-						text = canBusTripleService.getBusData().getRadioBand();
-						break;
-					case USB:
-						drawable = R.drawable.usb;
-						break;
-					case XM:
-						drawable = R.drawable.xm;
-						break;
-						
-					case AUDIO_SETUP:
-						showAudioControls();
-						return;
-						
-					case BT_PAIRING:
-						drawable = R.drawable.bluetooth;
-						text = "BT PAIRING";
-						break;
-					case CLOCK_SETUP:
-						drawable = R.drawable.clock;
-						text = "CLOCK SETUP";
-						break;
-					default:
-						drawable = R.drawable.cd;
-						break;		
-				}
-				
-				setAndShowRegister(drawable, text);				
-				break;
-				
-			case BLUETOOTH_CONNECTED:
-				boolean btConnected = (Boolean) value;
-				text = String.format(getResources().getString(R.string.bt_device_status), btConnected ? getResources().getString(R.string.connected) : getResources().getString(R.string.disconnected));
-				setAndShowRegister(R.drawable.bluetooth, text);
-				break;
-				
-			case COMPRESSOR_ON:
-				if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
-				setAndShowRegister(R.drawable.compressor, (Boolean) value ? getResources().getString(R.string.on) : getResources().getString(R.string.off));
-				break;
-				
-			case DISPLAY_BUTTON_PRESSED:
+                final Airflow airflow = (Airflow) value;
+
+                switch (airflow) {
+                    case AUTO_FRESH_AIR:
+                        drawable = R.drawable.freshair;
+                        break;
+                    case AUTO_RECIRCULATE:
+                        drawable = R.drawable.recirculate;
+                        break;
+                    case FRESH_AIR:
+                        drawable = R.drawable.freshair;
+                        break;
+                    case RECIRCULATE:
+                        drawable = R.drawable.recirculate;
+                        break;
+                    default:
+                        break;
+                }
+
+                setAndShowRegister(drawable, airflow.toString());
+                break;
+
+            case AUDIO_SOURCE:
+                final AudioSource source = (AudioSource) value;
+
+                if (source != BusData.AudioSource.AUDIO_SETUP && audioControlsLayout.getVisibility() == View.VISIBLE) {
+                    audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
+                    audioControlsFadeHandler.post(audioControlsFadeRunnable);
+                    return;
+                }
+
+                switch (source) {
+                    case BLUETOOTH:
+                        drawable = R.drawable.bluetooth;
+                        break;
+                    case RADIO:
+                        drawable = R.drawable.radio;
+                        text = canBusTripleService.getBusData().getRadioBand();
+                        break;
+                    case USB:
+                        drawable = R.drawable.usb;
+                        break;
+                    case XM:
+                        drawable = R.drawable.xm;
+                        break;
+
+                    case AUDIO_SETUP:
+                        showAudioControls();
+                        return;
+
+                    case BT_PAIRING:
+                        drawable = R.drawable.bluetooth;
+                        text = "BT PAIRING";
+                        break;
+                    case CLOCK_SETUP:
+                        drawable = R.drawable.clock;
+                        text = "CLOCK SETUP";
+                        break;
+                    default:
+                        drawable = R.drawable.cd;
+                        break;
+                }
+
+                setAndShowRegister(drawable, text);
+                break;
+
+            case BLUETOOTH_CONNECTED:
+                boolean btConnected = (Boolean) value;
+                text = String.format(getResources().getString(R.string.bt_device_status), btConnected ? getResources().getString(R.string.connected) : getResources().getString(R.string.disconnected));
+                setAndShowRegister(R.drawable.bluetooth, text);
+                break;
+
+            case COMPRESSOR_ON:
+                if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
+                setAndShowRegister(R.drawable.compressor, (Boolean) value ? getResources().getString(R.string.on) : getResources().getString(R.string.off));
+                break;
+
+            case DISPLAY_BUTTON_PRESSED:
 //				setAndShowRegister(R.drawable.clock, canBusTripleService.getBusData().getTimeOfDay());
-				setAndShowRegister(R.drawable.thermometer, String.format("%s\u00B0 Outside", canBusTripleService.getBusData().getOutsideTemperature()));
-				break;
+                setAndShowRegister(R.drawable.thermometer, String.format("%s\u00B0 Outside", canBusTripleService.getBusData().getOutsideTemperature()));
+                break;
 
-			case MUTED:
-				boolean muted = (Boolean) value;
-				setAndShowRegister(muted ? R.drawable.mute : R.drawable.volume, "");
-				break;
-				
-			case OUTSIDE_TEMPERATURE:
+            case MUTED:
+                boolean muted = (Boolean) value;
+                setAndShowRegister(muted ? R.drawable.mute : R.drawable.volume, "");
+                break;
+
+            case OUTSIDE_TEMPERATURE:
 //				setAndShowRegister(R.drawable.thermometer, String.format("%d\nOutside", (Integer) value));
-				break;
-				
-			case RADIO_POWERED_ON:
-				setAndShowRegister(R.drawable.radio, (Boolean) value ? "ON" : "OFF");
-				break;
-				
-			case THERMOSTAT:
-				lastHiPriMsg = System.currentTimeMillis();
-				setAndShowRegister(R.drawable.thermometer, (String) value);
-				break;
-				
-			case TIME_OF_DAY:
-				// do nothing -- currently mapped to DISP button
-				break;
-				
-			case VENTS:
-				if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
-				lastHiPriMsg = System.currentTimeMillis();
-				final Vents vents = (Vents) value;
-				
-				switch (vents) {
-					case DEFROST:
-						drawable = R.drawable.frontdefrost;
-						break;
-					case DEFROST_FLOOR:
-						break;
-					case FLOOR:
-						break;
-					case FRONT:
-						break;
-					case FRONT_FLOOR:
-						break;
-					default:
-						break;
-				}
-				
-				if (drawable != 0) setAndShowRegister(drawable, "");
-				break;
-				
-			case VOLUME:
-				setAndShowRegister(R.drawable.volume, (String) value);
-				break;
-				
-			case RADIO_STATION:
-				final String band = canBusTripleService.getBusData().getRadioBand();
-				final String station = String.format(Locale.US, band.equals("AM") ? "%.0f" : "%.1f", (Float) value);
-				setAndShowRegister(R.drawable.radio, band + " " + station);
+                break;
+
+            case RADIO_POWERED_ON:
+                setAndShowRegister(R.drawable.radio, (Boolean) value ? "ON" : "OFF");
+                break;
+
+            case THERMOSTAT:
+                lastHiPriMsg = System.currentTimeMillis();
+                setAndShowRegister(R.drawable.thermometer, (String) value);
+                break;
+
+            case TIME_OF_DAY:
+                // do nothing -- currently mapped to DISP button
+                break;
+
+            case VENTS:
+                if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
+                lastHiPriMsg = System.currentTimeMillis();
+                final Vents vents = (Vents) value;
+
+                switch (vents) {
+                    case DEFROST:
+                        drawable = R.drawable.frontdefrost;
+                        break;
+                    case DEFROST_FLOOR:
+                        break;
+                    case FLOOR:
+                        break;
+                    case FRONT:
+                        break;
+                    case FRONT_FLOOR:
+                        break;
+                    default:
+                        break;
+                }
+
+                if (drawable != 0) setAndShowRegister(drawable, "");
+                break;
+
+            case VOLUME:
+                setAndShowRegister(R.drawable.volume, (String) value);
+                break;
+
+            case RADIO_STATION:
+                if (canBusTripleService.getBusData().getAudioSource() == AudioSource.RADIO) {
+                    station = String.format(Locale.US, band.equals("AM") ? "%.0f" : "%.1f", (Float) value);
+                    setAndShowRegister(R.drawable.radio, band + " " + station);
+                }
                 break;
 			
 			case SOUND_BALANCE:
@@ -486,7 +495,23 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 				}
 				return;
 
-				
+            case RADIO_PRESET:
+                final String preset = (String) value;
+                station = String.format(Locale.US, band.equals("AM") ? "%.0f" : "%.1f", canBusTripleService.getBusData().getRadioStation());
+                setAndShowRegister(R.drawable.radio, band + " " + station + " " + preset);
+                break;
+
+            case FM_STEREO:
+                if (canBusTripleService.getBusData().getAudioSource() == AudioSource.RADIO) {
+                    station = String.format(Locale.US, band.equals("AM") ? "%.0f" : "%.1f", canBusTripleService.getBusData().getRadioStation());
+                    setAndShowRegister(R.drawable.fmstereo, band + " " + station);
+                }
+                break;
+
+            case XM_BAND:
+                setAndShowRegister(R.drawable.xm, (String) value);
+                break;
+
 			default:
 				break;
 		}
@@ -512,16 +537,17 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 			audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
 			audioControlsFadeHandler.post(audioControlsFadeRunnable);
 			return;
-		} 
-		
-		if (registerLayout.getVisibility() != View.VISIBLE) {
+        }
+
+        if (registerLayout.getVisibility() != View.VISIBLE) {
 			registerLayout.setAlpha(0f);
 			registerLayout.setVisibility(View.VISIBLE);
 			registerLayout.animate()
-			            .alpha(1f)
-			            .setDuration(500)
-			            .setListener(null);
-		}
+			              .alpha(1f)
+			              .setDuration(500)
+			              .setListener(null);
+            setWakeLock();
+        }
 		
 		registerFadeHandler.removeCallbacks(RegisterFadeRunnable);
 		registerFadeHandler.postDelayed(RegisterFadeRunnable, 3000);	
@@ -540,6 +566,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
                 public void onAnimationEnd(Animator animation) {
         			registerLayout.setVisibility(View.GONE);
         			moveTaskToBack(true);
+                    clearWakeLock();
                 }
             });
 		} 
@@ -556,8 +583,8 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 			registerFadeHandler.removeCallbacks(RegisterFadeRunnable);
 			registerFadeHandler.post(RegisterFadeRunnable);
 			return;
-		} 
-		
+		}
+
 		bassSeek.setProgress(canBusTripleService.getBusData().getBass());
 		midRangeSeek.setProgress(canBusTripleService.getBusData().getMidRange());
 		trebleSeek.setProgress(canBusTripleService.getBusData().getTreble());
@@ -568,9 +595,10 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 			audioControlsLayout.setAlpha(0f);
 			audioControlsLayout.setVisibility(View.VISIBLE);
 			audioControlsLayout.animate()
-			            .alpha(1f)
-			            .setDuration(500)
-			            .setListener(null);
+			                   .alpha(1f)
+                    .setDuration(500)
+                    .setListener(null);
+            setWakeLock();
 		}
 		
 		audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
@@ -589,8 +617,45 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
                 public void onAnimationEnd(Animator animation) {
         			audioControlsLayout.setVisibility(View.GONE);
         			moveTaskToBack(true);
+                    clearWakeLock();
                 }
             });
 		} 
 	};
+
+    public static void setWakeLock() {
+//        getWindow().addFlags(
+//                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+//                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+//                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+//                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+		if (wakeLock != null) {
+			wakeLock.release();
+			wakeLock = null;
+		}
+
+		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+				                  PowerManager.ACQUIRE_CAUSES_WAKEUP |
+				                  PowerManager.ON_AFTER_RELEASE, "WakeLock");
+		wakeLock.acquire();
+
+        Log.d(APP_NAME, "setWakeLock");
+    }
+
+    public static void clearWakeLock() {
+//        getWindow().clearFlags(
+//                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+//                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+//                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+//                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+		if (wakeLock != null) {
+			wakeLock.release();
+			wakeLock = null;
+		}
+
+        Log.d(APP_NAME, "clearWakeLock");
+    }
 }

@@ -20,7 +20,6 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -39,6 +38,7 @@ import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -82,7 +82,9 @@ public class CanBusTripleService extends Service
 	private final static String OUTSIDE_TEMPERATURE_MSG = "15";
 	private final static String BLUETOOTH_CONNECTED_MSG = "16";
 	private final static String VENTS_MSG = "17";
-	
+	private final static String RADIO_PRESET_AND_FM_STEREO_MSG = "18";
+    private final static String XM_BAND_MSG = "19";
+
 	private final static int CONNECT_TIMEOUT = 15000;
 	private final static int READ_TIMEOUT = 15000;
 	private final static int RECEIVE_TIMEOUTS_THRESHOLD = 3;
@@ -101,7 +103,9 @@ public class CanBusTripleService extends Service
 	private BluetoothDevice bluetoothDevice;
 	private BluetoothGatt bluetoothGatt;
 	private BluetoothGattCharacteristic notifyCharacteristic;
-	
+
+    private PowerManager.WakeLock wakeLock;
+
 	private final Handler dataHandler = new Handler();
 	private final StringBuilder data = new StringBuilder(512);
 	private State state = State.DISCONNECTED;
@@ -387,19 +391,21 @@ public class CanBusTripleService extends Service
 					final int station = Integer.parseInt(message.substring(9, 11), 16);
 					final int band  = Integer.parseInt(message.substring(12, 14), 16);
 
-					busData.setVolume(volume);					
-					busData.setRadioBand(band);
+					if (volume <= 0x8C) busData.setVolume(volume);
+					if (band == 1 || band == 129 || band == 2 || band == 3) busData.setRadioBand(band);
 					busData.setAudioSource(source);
 					busData.setRadioStation(station);
 					
-	       			Log.i(SERVICE_NAME, "Volume: " + busData.getVolume() + " Source: " + busData.getAudioSource().toString() +
-	       					            " Station: " + busData.getRadioStation() + " Band: " + busData.getRadioBand());
+	       			Log.i(SERVICE_NAME, "Volume: " + busData.getVolume() +
+							            " Source: " + busData.getAudioSource().toString() +
+	       					            " Station: " + busData.getRadioStation() +
+							            " Band: " + busData.getRadioBand());
 					return;
 				}
 	
 				// volume muted
 				if (message.startsWith(MUTE_MSG)) {	
-					busData.setMuted( message.endsWith("01") );
+					busData.setMuted(message.endsWith("01"));
 					
 	       			Log.i(SERVICE_NAME, "Mute: " + busData.isMuted());
 					return;
@@ -450,22 +456,45 @@ public class CanBusTripleService extends Service
 	       			Log.i(SERVICE_NAME, "Bluetooth connected: " + busData.isBluetoothConnected());
 					return;
 				}
-				
-				// ac vents, auto/fresh/recirc, ac compressor
-				if (message.startsWith(VENTS_MSG)) {
-					final int vents = Integer.parseInt(message.substring(3, 5), 16);
-					final int airflow = Integer.parseInt(message.substring(6, 8), 16);
-					final int compressor = Integer.parseInt(message.substring(9, 11), 16);
-					
-					busData.setVents(vents);
-					busData.setAirflow(airflow);
-					busData.setCompressorOn(compressor == 0x0D);
-					
-	       			Log.i(SERVICE_NAME, "Vents: " + busData.getVents().toString() + " Airflow: " + busData.getAirflow().toString() + " Compressor: " + busData.isCompressorOn());
-					return;
-				}
-				
-			} catch (Exception ex) {
+
+                // ac vents, auto/fresh/recirc, ac compressor
+                if (message.startsWith(VENTS_MSG)) {
+                    final int vents = Integer.parseInt(message.substring(3, 5), 16);
+                    final int airflow = Integer.parseInt(message.substring(6, 8), 16);
+                    final int compressor = Integer.parseInt(message.substring(9, 11), 16);
+
+                    busData.setVents(vents);
+                    busData.setAirflow(airflow);
+                    busData.setCompressorOn(compressor == 0x0D);
+
+                    Log.i(SERVICE_NAME, "Vents: " + busData.getVents().toString() + " Airflow: " + busData.getAirflow().toString() + " Compressor: " + busData.isCompressorOn());
+                    return;
+                }
+
+                // radio presets and fm stereo
+                if (message.startsWith(RADIO_PRESET_AND_FM_STEREO_MSG)) {
+//                    final int fmStereo = Integer.parseInt(message.substring(3, 5), 16);
+//                    final int fmStereo = Integer.parseInt(message.substring(6, 8), 16);
+
+//                    busData.setRadioPreset(preset);
+                    busData.setFmStereo(true);
+
+                    Log.i(SERVICE_NAME, "Radio Preset: " + busData.getRadioPreset() + " FM Stereo: " + busData.isFmStereo());
+                    return;
+                }
+
+                // XM Band
+//                if (message.startsWith(XM_BAND_MSG)) {
+//                    final int band = Integer.parseInt(message.substring(3, 5), 16);
+//
+//                    busData.setXmBand(band);
+//
+//                    Log.i(SERVICE_NAME, "XM Band: " + busData.getXmBand());
+//                    return;
+//                }
+
+
+            } catch (Exception ex) {
 				Log.w(SERVICE_NAME, "Message rejected: [" + message + "] " + Log.getStackTraceString(ex));
 			}
 		}
@@ -594,14 +623,14 @@ public class CanBusTripleService extends Service
         PendingIntent piSettings = PendingIntent.getActivity(getApplicationContext(), 0, iSettings, PendingIntent.FLAG_UPDATE_CURRENT);
 
     	Notification.Builder notifier = new Notification.Builder(context)
-        .setSmallIcon(R.drawable.ic_launcher)
-        .setContentTitle(getResources().getString(R.string.service_name))
-        .setAutoCancel(false)
-        .setOngoing(true)
-        .setPriority(Notification.PRIORITY_MAX)
-        .setShowWhen(false)
-        .addAction(android.R.drawable.ic_menu_close_clear_cancel, getResources().getString(R.string.close), piClose)
-    	.addAction(android.R.drawable.ic_menu_preferences, getResources().getString(R.string.settings), piSettings);
+					.setSmallIcon(R.drawable.ic_launcher)
+					.setContentTitle(getResources().getString(R.string.service_name))
+					.setAutoCancel(false)
+					.setOngoing(true)
+					.setPriority(Notification.PRIORITY_MAX)
+					.setShowWhen(false)
+					.addAction(android.R.drawable.ic_menu_close_clear_cancel, getResources().getString(R.string.close), piClose)
+					.addAction(android.R.drawable.ic_menu_preferences, getResources().getString(R.string.settings), piSettings);
 
         if (text.length() > 0) notifier.setContentText(text);
         if (subtext.length() > 0 && !showProgress) notifier.setSubText(subtext);
@@ -656,7 +685,19 @@ public class CanBusTripleService extends Service
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
             if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())) {
-                if (btDevices.contains(device.getName())) devicesPresent++;
+                if (btDevices.contains(device.getName())) {
+                    devicesPresent++;
+
+                    //TODO: Clean this up at some point
+                    MainActivity.setWakeLock();
+
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MainActivity.clearWakeLock();
+                        }
+                    }, 5000);
+                }
                 Log.d(SERVICE_NAME, "BtConnectedReceiver device connected: " + device.getName());
             }
 
@@ -693,5 +734,17 @@ public class CanBusTripleService extends Service
 //                return "AUDIO_VIDEO";
 //            default: return "unknown!";
 //        }
+//    }
+
+
+//    private void acquireWakeLock() {
+//        if (wakeLock != null) wakeLock.release();
+//
+//        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+//
+//        wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+//                PowerManager.ACQUIRE_CAUSES_WAKEUP |
+//                PowerManager.ON_AFTER_RELEASE, "WakeLock");
+//        wakeLock.acquire();
 //    }
 }
