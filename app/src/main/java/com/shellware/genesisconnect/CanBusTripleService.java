@@ -44,8 +44,6 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.shellware.genesisconnect.BusData.BusDataFields;
-
 import java.util.Locale;
 import java.util.UUID;
 
@@ -370,7 +368,7 @@ public class CanBusTripleService extends Service
 					if (midrange <= 20) busData.setMidRange(midrange);
 					if (treble <= 20) busData.setTreble(treble);
 
-					if (busData.getAudioSource() != BusData.AudioSource.AUDIO_SETUP) {
+					if (busData.getAudioSource() != Enums.AudioSource.AUDIO_SETUP) {
 						busData.setDisplayButtonPressed(true);
 	       				Log.i(SERVICE_NAME, "DISP button pressed");
 					} else {
@@ -653,7 +651,7 @@ public class CanBusTripleService extends Service
 	}
 
 	@Override
-	public void onBusDataChanged(BusDataFields field, Object value) {
+	public void onBusDataChanged(Enums.BusDataFields field, Object value) {
 		lastUpdated = getSystemMillis();
 		receiveTimeouts = 0;
 	}

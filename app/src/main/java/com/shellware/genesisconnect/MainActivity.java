@@ -32,15 +32,12 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.shellware.genesisconnect.BusData.Airflow;
-import com.shellware.genesisconnect.BusData.AudioSource;
-import com.shellware.genesisconnect.BusData.BusDataFields;
-import com.shellware.genesisconnect.BusData.Vents;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+
+import com.shellware.genesisconnect.Enums;
 
 public class MainActivity extends Activity implements OnTouchListener, BusDataListener {
 
@@ -304,7 +301,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 	
 
 	@Override
-	public void onBusDataChanged(BusDataFields field, Object value) {
+	public void onBusDataChanged(Enums.BusDataFields field, Object value) {
 
 		int drawable = 0;
 
@@ -316,7 +313,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
             case AIRFLOW:
                 if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
 
-                final Airflow airflow = (Airflow) value;
+                final Enums.Airflow airflow = (Enums.Airflow) value;
 
                 switch (airflow) {
                     case AUTO_FRESH_AIR:
@@ -339,9 +336,9 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
                 break;
 
             case AUDIO_SOURCE:
-                final AudioSource source = (AudioSource) value;
+                final Enums.AudioSource source = (Enums.AudioSource) value;
 
-                if (source != BusData.AudioSource.AUDIO_SETUP && audioControlsLayout.getVisibility() == View.VISIBLE) {
+                if (source != Enums.AudioSource.AUDIO_SETUP && audioControlsLayout.getVisibility() == View.VISIBLE) {
                     audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
                     audioControlsFadeHandler.post(audioControlsFadeRunnable);
                     return;
@@ -423,19 +420,23 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
             case VENTS:
                 if (lastHiPriMsg + 1000 > System.currentTimeMillis()) return;
                 lastHiPriMsg = System.currentTimeMillis();
-                final Vents vents = (Vents) value;
+                final Enums.Vents vents = (Enums.Vents) value;
 
                 switch (vents) {
                     case DEFROST:
                         drawable = R.drawable.frontdefrost;
                         break;
                     case DEFROST_FLOOR:
+                        drawable = R.drawable.defrostbottom;
                         break;
                     case FLOOR:
+                        drawable = R.drawable.bottomvent;
                         break;
                     case FRONT:
+                        drawable = R.drawable.topvent;
                         break;
                     case FRONT_FLOOR:
+                        drawable = R.drawable.mixedvents;
                         break;
                     default:
                         break;
@@ -449,50 +450,30 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
                 break;
 
             case RADIO_STATION:
-                if (canBusTripleService.getBusData().getAudioSource() == AudioSource.RADIO) {
+                if (canBusTripleService.getBusData().getAudioSource() == Enums.AudioSource.RADIO) {
                     station = String.format(Locale.US, band.equals("AM") ? "%.0f" : "%.1f", (Float) value);
                     setAndShowRegister(R.drawable.radio, band + " " + station);
                 }
                 break;
 			
 			case SOUND_BALANCE:
-				balanceSeek.setProgress((Integer) value);				
-				if (audioControlsLayout.getVisibility() == View.VISIBLE) {
-					audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-					audioControlsFadeHandler.postDelayed(audioControlsFadeRunnable, 30000);	
-				}
+                setSeekBarProgress(balanceSeek, (Integer) value);
 				return;
 				
 			case SOUND_BASS:
-				bassSeek.setProgress((Integer) value);
-				if (audioControlsLayout.getVisibility() == View.VISIBLE) {
-					audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-					audioControlsFadeHandler.postDelayed(audioControlsFadeRunnable, 30000);	
-				}
+                setSeekBarProgress(bassSeek, (Integer) value);
 				return;
 
 			case SOUND_FADER:
-				faderSeek.setProgress((Integer) value);
-				if (audioControlsLayout.getVisibility() == View.VISIBLE) {
-					audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-					audioControlsFadeHandler.postDelayed(audioControlsFadeRunnable, 30000);	
-				}
+                setSeekBarProgress(faderSeek, (Integer) value);
 				return;
 
 			case SOUND_MIDRANGE:
-				midRangeSeek.setProgress((Integer) value);
-				if (audioControlsLayout.getVisibility() == View.VISIBLE) {
-					audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-					audioControlsFadeHandler.postDelayed(audioControlsFadeRunnable, 30000);	
-				}
+                setSeekBarProgress(midRangeSeek, (Integer) value);
 				return;
 
 			case SOUND_TREBLE:
-				trebleSeek.setProgress((Integer) value);
-				if (audioControlsLayout.getVisibility() == View.VISIBLE) {
-					audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
-					audioControlsFadeHandler.postDelayed(audioControlsFadeRunnable, 30000);	
-				}
+                setSeekBarProgress(trebleSeek, (Integer) value);
 				return;
 
             case RADIO_PRESET:
@@ -502,7 +483,7 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
                 break;
 
             case FM_STEREO:
-                if (canBusTripleService.getBusData().getAudioSource() == AudioSource.RADIO) {
+                if (canBusTripleService.getBusData().getAudioSource() == Enums.AudioSource.RADIO) {
                     station = String.format(Locale.US, band.equals("AM") ? "%.0f" : "%.1f", canBusTripleService.getBusData().getRadioStation());
                     setAndShowRegister(R.drawable.fmstereo, band + " " + station);
                 }
@@ -517,6 +498,16 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
 		}
 		
 	}
+
+    private void setSeekBarProgress(final SeekBar seek, final int value) {
+        seek.setProgress(value);
+
+        // ensure the audio controls dialog stays visible
+        if (audioControlsLayout.getVisibility() == View.VISIBLE) {
+            audioControlsFadeHandler.removeCallbacks(audioControlsFadeRunnable);
+            audioControlsFadeHandler.postDelayed(audioControlsFadeRunnable, 30000);
+        }
+    }
 
 	private void setAndShowRegister(final int imageResource, final String text) {
 		

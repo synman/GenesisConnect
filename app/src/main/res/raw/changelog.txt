@@ -20,8 +20,21 @@
   </head>
   <body>
   
+$ 0.0.4
+  % <b>Genesis Connect is governed by the terms of the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>. You must agree to these terms if you choose to use Genesis Connect in any manner whatsoever.</b><br><br>Version 0.0.4
+  _ 2015-07-23
+  ! 4th Alpha Release (Expect Bugs)
+	* Top Vent
+	* Bottom Vent
+	* Defrost / Bottom Vent
+	* Mixed Vents
+$ 0.0.3
+  % Version 0.0.3
+  _ 2015-07-08
+  ! 3rd Alpha Release (Expect Bugs)
+	* FM Stereo
 $ 0.0.2
-  % <b>Genesis Connect is governed by the terms of the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>. You must agree to these terms if you choose to use Genesis Connect in any manner whatsoever.</b><br><br>Version 0.0.2
+  % Version 0.0.2
   _ 2015-06-28
   ! 2nd Alpha Release (Expect Bugs)
 	* AM / FM1 / FM2

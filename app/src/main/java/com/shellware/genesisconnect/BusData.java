@@ -12,157 +12,6 @@ public class BusData {
 
 	private final static String CLASS_NAME = "GenesisData";
 
-	public enum Vents {
-	    FRONT(0x11), FRONT_FLOOR(0x12), FLOOR(0x13), DEFROST_FLOOR(0x14), DEFROST(0x15);
-	    
-	    private static class Cache {
-	        private static final SparseArray<Vents> cache = new SparseArray<Vents>();
-
-	        static {
-	            for (final Vents d : Vents.values()) {
-	                cache.put(d.fId, d);
-	            }
-	        }
-	    }
-
-	    public static Vents getVents(int i) {
-	        return Cache.cache.get(i);
-	    }
-
-	    public final int fId;
-
-        Vents(int id) {
-	        this.fId = id;
-	    }
-
-		@Override
-		public String toString() {
-			switch (fId) {
-				case 0x11:
-					return "Front";
-				case 0x12:
-					return "Front/Floor";
-				case 0x13:
-					return "Floor";
-				case 0x14:
-					return "Defrost/Floor";
-				case 0x15:
-					return "Defrost";
-				default:
-					return "UNKNOWN - " + fId;
-			}
-		}
-	}	
-	public enum Airflow {
-	    FRESH_AIR(0x00), AUTO_FRESH_AIR(0x01), RECIRCULATE(0x04), AUTO_RECIRCULATE(0x05);
-	 
-	    private static class Cache {
-	        private static final SparseArray<Airflow> cache = new SparseArray<Airflow>();
-
-	        static {
-	            for (final Airflow d : Airflow.values()) {
-	                cache.put(d.fId, d);
-	            }
-	        }
-	    }
-
-	    public static Airflow getAirflow(int i) {
-	        return Cache.cache.get(i);
-	    }
-
-	    public final int fId;
-
-        Airflow(int id) {
-	        this.fId = id;
-	    }
-
-		@Override
-		public String toString() {
-			switch (fId) {
-				case 0x00:
-					return "Fresh Air";
-				case 0x01:
-					return "Auto Fresh Air";
-				case 0x04:
-					return "Recirculate";
-				case 0x05:
-					return "Auto Recirculate";
-				default:
-					return "UNKNOWN " + fId;
-			}
-		}
-	}
-	public enum AudioSource {
-	    RADIO(0x02), XM(0x10), USB(0xA0), BLUETOOTH(0x51), CLOCK_SETUP(0x40), AUDIO_SETUP(0x41), BT_PAIRING(0x52);
-	 
-	    private static class Cache {
-	        private static final SparseArray<AudioSource> cache = new SparseArray<AudioSource>();
-
-	        static {
-	            for (final AudioSource d : AudioSource.values()) {
-	                cache.put(d.fId, d);
-	            }
-	        }
-	    }
-
-	    public static AudioSource getAudioSource(int i) {
-	        return Cache.cache.get(i);
-	    }
-
-	    public final int fId;
-
-        AudioSource(int id) {
-	        this.fId = id;
-	    }
-
-		@Override
-		public String toString() {
-			switch (fId) {
-				case 0x02:
-					return "Radio";
-				case 0x10:
-					return "XM";
-				case 0xA0:
-					return "USB";
-				case 0x51:
-					return "Bluetooth";
-				case 0x40:
-					return "Clock Setup";
-				case 0x41:
-					return "Audio Setup";
-				case 0x52:
-					return "Bluetooth Pairing";
-				default:
-					return "UNKNOWN " + fId;
-			}
-		}
-	}
-
-	public enum BusDataFields {
-		DISPLAY_BUTTON_PRESSED,
-		RADIO_POWERED_ON,
-		MUTED,
-		VOLUME,
-		THERMOSTAT,
-		OUTSIDE_TEMPERATURE,
-		TIME_OF_DAY,
-		BLUETOOTH_CONNECTED,
-		VENTS,
-		AIRFLOW,
-		COMPRESSOR_ON,
-		AUDIO_SOURCE,
-		RADIO_STATION,
-		RADIO_BAND,
-		SOUND_BASS,
-		SOUND_MIDRANGE,
-		SOUND_TREBLE,
-		SOUND_BALANCE,
-		SOUND_FADER,
-        RADIO_PRESET,
-        FM_STEREO,
-        XM_BAND
-	}
-	
 	private boolean displayButtonPressed;
 	private boolean radioPoweredOn;
 	private boolean muted;
@@ -171,10 +20,10 @@ public class BusData {
 	private String outsideTemperature;
 	private String timeOfDay;
 	private boolean bluetoothConnected;
-	private Vents vents;
-	private Airflow airflow;
+	private  Enums.Vents vents;
+	private  Enums.Airflow airflow;
 	private boolean compressorOn;
-	private AudioSource audioSource;
+	private  Enums.AudioSource audioSource;
 	private int radioStation;
 	private int radioBand;
 	
@@ -196,44 +45,44 @@ public class BusData {
 		this.context = context;
 	}
 
-	public synchronized AudioSource getAudioSource() {
+	public synchronized  Enums.AudioSource getAudioSource() {
 		return audioSource;
 	}
 
 	public synchronized void setAudioSource(int source) {
-		if (this.audioSource != AudioSource.getAudioSource(source)) {
-			this.audioSource = AudioSource.getAudioSource(source);
+		if (this.audioSource !=  Enums.AudioSource.getAudioSource(source)) {
+			this.audioSource =  Enums.AudioSource.getAudioSource(source);
 
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.AUDIO_SOURCE, getAudioSource());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.AUDIO_SOURCE, getAudioSource());
 			}
 		}
 	}
 
-	public synchronized Vents getVents() {
+	public synchronized  Enums.Vents getVents() {
 		return vents;
 	}
 
 	public synchronized void setVents(int vents) {
-		if (this.vents != Vents.getVents(vents)) {
-			this.vents = Vents.getVents(vents);
+		if (this.vents !=  Enums.Vents.getVents(vents)) {
+			this.vents =  Enums.Vents.getVents(vents);
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.VENTS, getVents());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.VENTS, getVents());
 			}
 		}
 	}
 
-	public synchronized Airflow getAirflow() {
+	public synchronized  Enums.Airflow getAirflow() {
 		return airflow;
 	}
 
 	public synchronized void setAirflow(final int airflow) {
-		if (this.airflow != Airflow.getAirflow(airflow)) {
-			this.airflow = Airflow.getAirflow(airflow);
+		if (this.airflow !=  Enums.Airflow.getAirflow(airflow)) {
+			this.airflow =  Enums.Airflow.getAirflow(airflow);
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.AIRFLOW, getAirflow());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.AIRFLOW, getAirflow());
 			}
 		}
 	}
@@ -247,7 +96,7 @@ public class BusData {
 			this.compressorOn = compressorOn;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.COMPRESSOR_ON, isCompressorOn());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.COMPRESSOR_ON, isCompressorOn());
 			}
 		}
 	}
@@ -261,7 +110,7 @@ public class BusData {
 			this.bluetoothConnected = bluetoothConnected;
 
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.BLUETOOTH_CONNECTED, isBluetoothConnected());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.BLUETOOTH_CONNECTED, isBluetoothConnected());
 			}
 		}
 	}
@@ -275,7 +124,7 @@ public class BusData {
 			this.timeOfDay = timeOfDay;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.TIME_OF_DAY, getTimeOfDay());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.TIME_OF_DAY, getTimeOfDay());
 			}
 		}
 	}
@@ -289,7 +138,7 @@ public class BusData {
 			this.muted = muted;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.MUTED, isMuted());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.MUTED, isMuted());
 			}
 		}
 	}
@@ -303,7 +152,7 @@ public class BusData {
 			this.volume = volume;
 
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.VOLUME, getVolume());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.VOLUME, getVolume());
 			}
 		}
 	}
@@ -333,7 +182,7 @@ public class BusData {
 			this.thermostat = thermostat;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.THERMOSTAT, getThermostat());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.THERMOSTAT, getThermostat());
 			}
 		}
 	}
@@ -351,7 +200,7 @@ public class BusData {
 			this.outsideTemperature = outsideTemperature;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.OUTSIDE_TEMPERATURE, getOutsideTemperature());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.OUTSIDE_TEMPERATURE, getOutsideTemperature());
 			}
 		}
 	}
@@ -365,7 +214,7 @@ public class BusData {
 			this.radioPoweredOn = radioPoweredOn;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.RADIO_POWERED_ON, isRadioPoweredOn());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.RADIO_POWERED_ON, isRadioPoweredOn());
 			}
 		}
 	}
@@ -383,7 +232,7 @@ public class BusData {
 			this.displayButtonPressed = displayButtonPressed;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.DISPLAY_BUTTON_PRESSED, isDisplayButtonPressed());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.DISPLAY_BUTTON_PRESSED, isDisplayButtonPressed());
 			}
 		}
 	}
@@ -408,7 +257,7 @@ public class BusData {
 			this.radioStation = radioStation;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.RADIO_STATION, getRadioStation());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.RADIO_STATION, getRadioStation());
 			}
 		}
 	}
@@ -432,7 +281,7 @@ public class BusData {
 			this.radioBand = radioBand;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.RADIO_BAND, getRadioBand());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.RADIO_BAND, getRadioBand());
 			}
 		}
 	}
@@ -446,7 +295,7 @@ public class BusData {
 			this.bass = bass;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.SOUND_BASS, getBass());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.SOUND_BASS, getBass());
 			}
 		}
 	}
@@ -460,7 +309,7 @@ public class BusData {
 			this.midrange = midrange;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.SOUND_MIDRANGE, getMidRange());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.SOUND_MIDRANGE, getMidRange());
 			}
 		}
 	}
@@ -474,7 +323,7 @@ public class BusData {
 			this.treble = treble;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.SOUND_TREBLE, getTreble());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.SOUND_TREBLE, getTreble());
 			}
 		}
 	}
@@ -488,7 +337,7 @@ public class BusData {
 			this.balance = balance;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.SOUND_BALANCE , getBalance());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.SOUND_BALANCE , getBalance());
 			}
 		}
 	}
@@ -502,7 +351,7 @@ public class BusData {
 			this.fader = fader;
 			
 			for (BusDataListener busDataListener : busDataListeners) {
-				busDataListener.onBusDataChanged(BusDataFields.SOUND_FADER, getFader());
+				busDataListener.onBusDataChanged(Enums.BusDataFields.SOUND_FADER, getFader());
 			}
 		}
 	}
@@ -531,7 +380,7 @@ public class BusData {
             this.radioPreset = preset;
 
             for (BusDataListener busDataListener : busDataListeners) {
-                busDataListener.onBusDataChanged(BusDataFields.RADIO_PRESET, getRadioPreset());
+                busDataListener.onBusDataChanged(Enums.BusDataFields.RADIO_PRESET, getRadioPreset());
             }
         }
     }
@@ -543,7 +392,7 @@ public class BusData {
             this.fmStereo = fmStereo;
 
             for (BusDataListener busDataListener : busDataListeners) {
-                busDataListener.onBusDataChanged(BusDataFields.FM_STEREO, isFmStereo());
+                busDataListener.onBusDataChanged(Enums.BusDataFields.FM_STEREO, isFmStereo());
             }
 //        }
     }
@@ -566,7 +415,7 @@ public class BusData {
             this.xmBand = xmBand;
 
             for (BusDataListener busDataListener : busDataListeners) {
-                busDataListener.onBusDataChanged(BusDataFields.XM_BAND, getXmBand());
+                busDataListener.onBusDataChanged(Enums.BusDataFields.XM_BAND, getXmBand());
             }
         }
 
