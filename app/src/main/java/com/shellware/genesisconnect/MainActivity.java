@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -393,6 +394,9 @@ public class MainActivity extends Activity implements OnTouchListener, BusDataLi
             case DISPLAY_BUTTON_PRESSED:
 //				setAndShowRegister(R.drawable.clock, canBusTripleService.getBusData().getTimeOfDay());
                 setAndShowRegister(R.drawable.thermometer, String.format("%s\u00B0 Outside", canBusTripleService.getBusData().getOutsideTemperature()));
+                Intent i = new Intent("com.android.music.musicservicecommand");
+                i.putExtra("command", "next");
+                sendBroadcast(i);
                 break;
 
             case MUTED:
